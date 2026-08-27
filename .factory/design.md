@@ -21,6 +21,7 @@ is not included in v1; the background is painted explicitly everywhere.
 - `thread`: `#006B62` — primary action/correlation thread, 5.6:1 on paper.
 - `thread-deep`: `#004E49` — pressed states and white button ground.
 - `ochre`: `#A35D00` — uncertain/mid-confidence evidence.
+- `pin-gold`: `#D29A46` — task-lamp accents and thread anchor pins.
 - `brick`: `#A43A2D` — errors and unmatched evidence.
 - `moss`: `#2F6B3C` — confirmed/high-confidence evidence.
 - `night`: `#233330` — utility rail and “back of the diorama”.
@@ -90,5 +91,5 @@ SVG/CSS primitives because they must remain sharp and deterministic.
 Generated specifically for this product on 2026-08-27 using the factory image
 deployment via `/opt/fleet/lib/gen-image.sh`. Prompt is stored beside the source
 asset in `assets/src/hero-paper-trace.json`. Generated imagery is disclosed in
-the footer. The selected source PNG is retained for provenance; optimized WebP
-and AVIF derivatives ship with the app.
+the footer. The selected source PNG is retained for provenance; 720px and
+1200px optimized WebP derivatives ship with the app (36 KB and 92 KB).
