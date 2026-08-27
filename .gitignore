@@ -4,3 +4,6 @@ dist/
 *.log
 graphify-out/
 .DS_Store
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
