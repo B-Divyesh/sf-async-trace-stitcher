@@ -1,0 +1,11 @@
+{
+  "slug": "async-trace-stitcher",
+  "title": "Async Trace Stitcher",
+  "territory": "devtools-data",
+  "user": "An engineer debugging one failed customer transaction across their app, queues, webhooks, and vendors who needs a defensible timeline without deploying a full tracing platform.",
+  "smallest_useful_product": "A local web app that accepts redacted JSON/NDJSON exports from logs and webhooks, correlates configured IDs and timestamps, displays a proposed timeline with confidence, and exports a shareable incident bundle.",
+  "success_measure": "On five real incidents, an engineer produces a reviewable cross-system timeline in under 15 minutes and can identify every unmatched event explicitly.",
+  "artifact_class": "pwa-offline",
+  "monetization": "one-time",
+  "constraints": "Keep uploads in-browser by default; require visible correlation rules; scrub PII before export and never send vendor credentials."
+}
