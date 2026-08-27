@@ -8,7 +8,7 @@ export const DEFAULT_DRAFT: CaseDraft = {
     { id: crypto.randomUUID(), name: 'Queue / webhook export', content: '' },
   ],
   rules: [
-    { id: crypto.randomUUID(), name: 'Request chain', fields: ['trace_id', 'request_id', 'correlation_id'], enabled: true },
+    { id: crypto.randomUUID(), name: 'Request chain', fields: ['trace_id', 'request_id', 'correlation_id', 'job_id'], enabled: true },
     { id: crypto.randomUUID(), name: 'Business object', fields: ['order_id', 'transaction_id', 'payment_intent_id'], enabled: true },
   ],
   timestampFields: ['timestamp', 'time', 'created_at', 'created', 'ts', 'occurred_at'],

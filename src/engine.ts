@@ -155,8 +155,6 @@ export function stitch(
     });
   });
 
-  const groupSizes = new Map<number, number>();
-  events.forEach((_, index) => groupSizes.set(union.find(index), (groupSizes.get(union.find(index)) ?? 0) + 1));
   events.forEach((event, index) => {
     const root = union.find(index);
     if (event.evidence.length) {
@@ -177,7 +175,7 @@ export function stitch(
         event.notes.push(`Near matched evidence in time (within ${proximitySeconds}s); no identifier match`);
       }
     }
-    if (!groupSizes.get(root)) event.notes.push('No enabled rule matched another source');
+    event.notes.push('No enabled rule matched this event to another source.');
   });
 
   events.sort((a, b) => {

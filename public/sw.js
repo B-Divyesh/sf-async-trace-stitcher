@@ -1,11 +1,18 @@
-const VERSION = 'ats-v1';
+const VERSION = 'ats-v2';
 const SHELL = [
   '/', '/index.html', '/offline.html', '/manifest.webmanifest', '/mark.svg',
   '/icon-192.png', '/icon-512.png', '/assets/hero-paper-trace.webp', '/assets/hero-paper-trace-small.webp'
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(VERSION).then((cache) => cache.addAll(SHELL)));
+  event.waitUntil((async () => {
+    const cache = await caches.open(VERSION);
+    await cache.addAll(SHELL);
+    const response = await fetch('/index.html');
+    const html = await response.text();
+    const builtAssets = [...html.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map((match) => match[1]);
+    await cache.addAll(builtAssets);
+  })());
 });
 
 self.addEventListener('activate', (event) => {
@@ -28,10 +35,10 @@ self.addEventListener('fetch', (event) => {
       const copy = response.clone();
       caches.open(VERSION).then((cache) => cache.put('/index.html', copy));
       return response;
-    }).catch(() => caches.match('/index.html').then((cached) => cached || caches.match('/offline.html'))));
+    }).catch(() => caches.match('/index.html', { ignoreVary: true }).then((cached) => cached || caches.match('/offline.html', { ignoreVary: true }))));
     return;
   }
-  event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
+  event.respondWith(caches.match(event.request, { ignoreVary: true }).then((cached) => cached || fetch(event.request).then((response) => {
     if (response.ok) caches.open(VERSION).then((cache) => cache.put(event.request, response.clone()));
     return response;
   })));

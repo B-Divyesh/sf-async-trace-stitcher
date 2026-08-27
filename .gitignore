@@ -7,3 +7,6 @@ graphify-out/
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
+artifacts/
+test-results/
+.playwright-browsers/

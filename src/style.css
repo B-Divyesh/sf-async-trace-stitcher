@@ -133,6 +133,7 @@ pre { max-height: 300px; overflow: auto; margin-bottom: 0; padding: 14px; white-
 
 .license-strip { margin-top: 64px; display: grid; grid-template-columns: 1fr auto; gap: 28px; align-items: center; padding: 28px; color: var(--paper); background: var(--night); border-left: 8px solid #d29a46; }
 .license-strip h2 { margin-bottom: 8px; }
+.license-strip .eyebrow { color: #f0c56e; }
 .license-strip a { color: #d9f6ef; }
 .license-form { display: flex; flex-wrap: wrap; gap: 8px; }
 .license-form input { min-width: 240px; }

@@ -279,6 +279,18 @@ function download(filename: string, content: string, type: string): void {
 
 function filenameBase(): string { return draft.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'incident'; }
 
+const sensitiveEvidenceField = /(^|[._])(email|phone|mobile|address|first_name|last_name|full_name|password|secret|token|authorization|cookie|card|cvv)($|[._])/i;
+function safeText(value: unknown): string { return String(scrubPii(String(value ?? ''))); }
+function scrubEventForExport(event: StitchedEvent): StitchedEvent {
+  return {
+    ...event,
+    sourceName: safeText(event.sourceName),
+    label: safeText(event.label),
+    raw: scrubPii(event.raw),
+    evidence: event.evidence.map((item) => ({ ...item, value: sensitiveEvidenceField.test(item.field) ? '[REDACTED]' : safeText(item.value) })),
+  };
+}
+
 function exportJson(): void {
   if (!result) return;
   const safeDraft = { ...draft, sources: draft.sources.map((source) => ({ ...source, content: '[Omitted: see scrubbed events]' })) };
@@ -287,7 +299,7 @@ function exportJson(): void {
     caution: 'Mechanical correlation only. Review source evidence before drawing causal conclusions.',
     draft: safeDraft,
     summary: { events: result.events.length, matched: result.matched.length, unmatched: result.unmatched.length, parseIssues: result.issues.length },
-    timeline: result.events.map((event) => ({ ...event, raw: scrubPii(event.raw) })),
+    timeline: result.events.map(scrubEventForExport),
     parseIssues: result.issues,
     exportedAt: new Date().toISOString(),
   };
@@ -299,13 +311,13 @@ function csvCell(value: unknown): string { return `"${String(value ?? '').replac
 function exportCsv(): void {
   if (!result) return;
   const lines = [['timestamp', 'source', 'event', 'confidence', 'score', 'group', 'evidence']
-    .map(csvCell).join(','), ...result.events.map((event) => [event.timestamp, event.sourceName, event.label, event.confidenceLabel, event.confidence, event.groupId, event.evidence.map((item) => `${item.rule}:${item.field}=${item.value}`).join('; ')].map(csvCell).join(','))];
+    .map(csvCell).join(','), ...result.events.map(scrubEventForExport).map((event) => [event.timestamp, event.sourceName, event.label, event.confidenceLabel, event.confidence, event.groupId, event.evidence.map((item) => `${item.rule}:${item.field}=${item.value}`).join('; ')].map(csvCell).join(','))];
   download(`${filenameBase()}-timeline.csv`, lines.join('\n'), 'text/csv;charset=utf-8');
 }
 
 function exportMarkdown(): void {
   if (!result || !isPro) return;
-  const rows = result.events.map((event) => `| ${event.timestamp ?? 'Unknown'} | ${event.sourceName.replaceAll('|', '\\|')} | ${event.label.replaceAll('|', '\\|')} | ${event.confidenceLabel} ${event.confidence || ''} |`).join('\n');
+  const rows = result.events.map(scrubEventForExport).map((event) => `| ${event.timestamp ?? 'Unknown'} | ${event.sourceName.replaceAll('|', '\\|')} | ${event.label.replaceAll('|', '\\|')} | ${event.confidenceLabel} ${event.confidence || ''} |`).join('\n');
   const text = `# ${draft.title}\n\n> Proposed mechanical correlation. Review underlying evidence before making causal claims.\n\n## Summary\n\n- ${result.matched.length} identifier-matched events\n- ${result.unmatched.length} unmatched events\n- ${result.issues.length} parse issues\n\n## Timeline\n\n| Timestamp | Source | Event | Confidence |\n|---|---|---|---|\n${rows}\n\n## Review checklist\n\n- [ ] Confirm clock skew between sources\n- [ ] Review every unmatched event\n- [ ] Validate identifiers against original exports\n- [ ] Record alternate explanations\n`;
   download(`${filenameBase()}-review.md`, text, 'text/markdown;charset=utf-8');
 }
@@ -379,13 +391,14 @@ window.addEventListener('offline', onlineUpdate);
 
 async function registerServiceWorker(): Promise<void> {
   if (!('serviceWorker' in navigator) || import.meta.env.DEV) return;
+  const hadController = Boolean(navigator.serviceWorker.controller);
   const registration = await navigator.serviceWorker.register('/sw.js');
   if (registration.waiting) showUpdate(registration);
   registration.addEventListener('updatefound', () => {
     const worker = registration.installing;
     worker?.addEventListener('statechange', () => { if (worker.state === 'installed' && navigator.serviceWorker.controller) showUpdate(registration); });
   });
-  navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
+  if (hadController) navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
 }
 
 function showUpdate(registration: ServiceWorkerRegistration): void {
