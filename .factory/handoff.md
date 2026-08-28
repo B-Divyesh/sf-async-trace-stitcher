@@ -2,7 +2,7 @@
 
 **Work order:** `async-trace-stitcher-repair-1`  
 **Base verified:** `aabd9e6bafb0c1d27b419238dd1821955326065f`  
-**Repair:** `d8b3f22de047a6ad5ec1a35a04b5d24190be02f1`  
+**Repair commits:** `d8b3f22de047a6ad5ec1a35a04b5d24190be02f1`, `67f2be1b66146a699ef2701c0854593648083b48`  
 **Date:** 2026-08-28 UTC  
 **Release decision:** **PASS — static PWA repair is buildable and deployed.**
 
@@ -45,6 +45,7 @@ vulnerabilities) with Node 22.23.2.
 | Privacy/network | PASS | A browser workflow requested only its own origin: document, hashed JS/CSS, mark SVG, and local hero WebP. No analytics, CDNs, or evidence uploads. |
 | Response policy | PASS | Built `dist/staticwebapp.config.json` parses with `jq`; it specifies CSP, Permissions-Policy, manifest `application/manifest+json`, immutable `/assets/*`, and no-cache `/sw.js`. |
 | Performance | PASS | Mobile Lighthouse against local production preview: Performance 100, Accessibility 100, FCP 1.0s, LCP 1.6s, TBT 0ms, CLS 0. Initial JS 33.97KB (11.93KB gzip), CSS 11.93KB (3.62KB gzip); both below budget. |
+| Live deployment | PASS | Deployed Azure SWA deployment `37ca3f31-936d-455e-9f96-eb921d017b3b`. `verify-url.sh` at `https://async-trace-stitcher.sociobot.in` reported 630ms load, no errors, title/lang/one h1/main/alt checks passing. Live `index.html` SHA-256 is `5aa9a884c8fbffe58cd80015ac80fd54a2f8307c17e9ec009722b9934d04bb1b`, equal to `dist/`; CSP and Permissions-Policy are present, JS is immutable, and the manifest is `application/manifest+json`. A live 390px PWA workflow produced the 5/1 timeline, requested only the product origin, had no errors, used cache `ats-v3`, and restored “Live offline incident” with `Offline ready` after `context.setOffline(true)`. |
 
 ## Run and deploy
 
@@ -57,8 +58,7 @@ npm run test:e2e
 
 `dist/` is the deployable static artifact, containing `index.html` and the
 Azure Static Web Apps policy file. It was deployed with
-`/opt/fleet/lib/deploy-static.sh async-trace-stitcher dist`; post-deploy
-identity, headers, and browser checks are recorded with the deployment result.
+`/opt/fleet/lib/deploy-static.sh async-trace-stitcher dist`.
 
 ## Known gaps
 
