@@ -92,4 +92,6 @@ Generated specifically for this product on 2026-08-27 using the factory image
 deployment via `/opt/fleet/lib/gen-image.sh`. Prompt is stored beside the source
 asset in `assets/src/hero-paper-trace.json`. Generated imagery is disclosed in
 the footer. The selected source PNG is retained for provenance; 720px and
-1200px optimized WebP derivatives ship with the app (36 KB and 92 KB).
+1200px optimized WebP derivatives ship with the app (36 KB and 92 KB). The
+1200×630 social preview is a center crop of that original asset. The 180px
+touch icon is derived from the hand-authored product mark.

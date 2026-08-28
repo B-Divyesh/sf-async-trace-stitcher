@@ -3,8 +3,6 @@ const API = 'https://api.sociobot.in/api/v1';
 const TOKEN_KEY = `sb_license:${SLUG}`;
 const VERDICT_KEY = `${TOKEN_KEY}:verdict`;
 
-export const BUY_URL = `${API}/products/${SLUG}/checkout`;
-
 interface Verdict { valid: boolean; checkedAt: number; reason?: string }
 
 export function captureReturnedLicense(): void {

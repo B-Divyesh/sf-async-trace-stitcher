@@ -19,7 +19,7 @@ export const DEFAULT_DRAFT: CaseDraft = {
 export const SAMPLE_SOURCES = [
   {
     name: 'Application logs',
-    content: `{"timestamp":"2026-08-26T14:03:11.120Z","level":"info","message":"Checkout accepted","request_id":"req_7fc2","order_id":"ord_1842"}\n{"timestamp":"2026-08-26T14:03:12.008Z","level":"info","message":"Payment job queued","request_id":"req_7fc2","job_id":"job_91"}`,
+    content: `{"timestamp":"2026-08-26T14:03:11.120Z","level":"info","message":"Checkout accepted","request_id":"req_7fc2","order_id":"ord_1842","email":"customer@example.com"}\n{"timestamp":"2026-08-26T14:03:12.008Z","level":"info","message":"Payment job queued","request_id":"req_7fc2","job_id":"job_91","access_token":"tok_demo_secret"}\n{malformed export line}`,
   },
   {
     name: 'Queue worker',

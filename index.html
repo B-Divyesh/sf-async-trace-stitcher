@@ -4,13 +4,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#233330" />
-    <meta name="description" content="Stitch partial JSON and NDJSON evidence into a reviewable incident timeline, locally in your browser." />
+    <meta name="description" content="Build a reviewable timeline for one failed transaction from redacted log, queue, and webhook exports." />
+    <link id="canonical" rel="canonical" href="https://async-trace-stitcher.sociobot.in/" />
+    <meta property="og:type" content="website" />
+    <meta id="og-title" property="og:title" content="Async Trace Stitcher — incident timelines" />
+    <meta id="og-description" property="og:description" content="Build a reviewable timeline for one failed transaction from redacted log, queue, and webhook exports." />
+    <meta id="og-url" property="og:url" content="https://async-trace-stitcher.sociobot.in/" />
+    <meta property="og:image" content="https://async-trace-stitcher.sociobot.in/assets/async-trace-stitcher-social.webp" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta id="twitter-title" name="twitter:title" content="Async Trace Stitcher — incident timelines" />
+    <meta id="twitter-description" name="twitter:description" content="Build a reviewable timeline for one failed transaction from redacted log, queue, and webhook exports." />
+    <meta name="twitter:image" content="https://async-trace-stitcher.sociobot.in/assets/async-trace-stitcher-social.webp" />
     <link rel="icon" href="/mark.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <title>Async Trace Stitcher · Local incident timeline builder</title>
+    <title>Async Trace Stitcher — incident timelines</title>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to main content</a>
+    <div id="route-status" class="sr-only" aria-live="polite" aria-atomic="true"></div>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

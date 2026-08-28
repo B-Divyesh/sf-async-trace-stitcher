@@ -1,0 +1,44 @@
+[
+  {
+    "id": "sample-timeline",
+    "claim": "The sample builds a six-event incident timeline from app, queue, and webhook JSON exports.",
+    "where": "landing first screen, demo, README",
+    "test": "npm run test:claim -- --grep @claim:sample-timeline",
+    "sandbox": "fresh browser context at /demo; assert six rendered events, five matches, one unmatched event, and one parse issue"
+  },
+  {
+    "id": "visible-evidence",
+    "claim": "Each match names its rule and value, while unmatched events and malformed lines stay visible.",
+    "where": "landing evidence rules, timeline, README",
+    "test": "npm run test:claim -- --grep @claim:visible-evidence",
+    "sandbox": "fresh browser context at /demo; inspect all matched cards, unmatched section, and parse issue"
+  },
+  {
+    "id": "local-private",
+    "claim": "The core workflow keeps case data in browser storage and sends requests only to the product origin.",
+    "where": "landing first screen, workbench, privacy section, README",
+    "test": "npm run test:claim -- --grep @claim:local-private",
+    "sandbox": "fresh browser context; save a real case, edit /demo, inspect both IndexedDB databases, localStorage, and every request origin"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "The app works offline after the first visit.",
+    "where": "landing first screen, README",
+    "test": "npm run test:claim -- --grep @claim:offline-reload",
+    "sandbox": "fresh browser context at /demo; wait for the service worker, set the context offline, reload, and assert all six events"
+  },
+  {
+    "id": "export-safety",
+    "claim": "Free CSV and JSON exports include all six events and remove common personal and secret values.",
+    "where": "landing first screen, evidence rules, export toolbar, README",
+    "test": "npm run test:claim -- --grep @claim:export-safety",
+    "sandbox": "fresh unlicensed browser context at /demo; download CSV and JSON, count rows, and inspect both files for seeded personal and secret values"
+  },
+  {
+    "id": "license-restore",
+    "claim": "An existing Pro license token can be verified and restored on this device.",
+    "where": "license section, privacy, terms, README",
+    "test": "npm run test:claim -- --grep @claim:license-restore",
+    "sandbox": "fresh browser context starting at /demo; leave the sandbox, mock the documented Sociobot verification response, submit a token, and assert stored unlock state"
+  }
+]

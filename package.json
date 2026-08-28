@@ -1,6 +1,6 @@
 {
   "name": "async-trace-stitcher",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,8 @@
     "preview": "vite preview --host 0.0.0.0",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:claim": "npm run build && playwright test --project=desktop"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

@@ -1,72 +1,89 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { readFile } from 'node:fs/promises';
 
-test('stitches the worked example and exposes unmatched evidence', async ({ page }) => {
-  const consoleErrors: string[] = [];
-  page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
+test('home explains the job and offers one-click sample data', async ({ page }) => {
   await page.goto('/');
-  await expect(page).toHaveTitle(/Async Trace Stitcher/);
-  await expect(page.locator('h1')).toHaveCount(1);
-  await page.getByRole('button', { name: 'Try the example' }).click();
-  await page.getByRole('button', { name: 'Stitch the timeline' }).click();
-  await expect(page.getByRole('heading', { name: 'Reviewable timeline' })).toBeVisible();
-  await expect(page.getByText('5 identifier matched')).toBeVisible();
-  await expect(page.getByText('1 explicitly unmatched')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Unmatched evidence' })).toBeVisible();
-  await expect(page.getByText('No enabled rule matched this event to another source.')).toBeVisible();
-  expect(consoleErrors).toEqual([]);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Build a timeline for one failed transaction');
+  await expect(page.getByText('For engineers debugging a customer failure across logs, queues, and webhooks.')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Try it with sample data' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Import redacted exports' })).toBeVisible();
 });
 
-test('has no serious accessibility violations on the primary workflow', async ({ page }) => {
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Try the example' }).click();
-  await page.getByRole('button', { name: 'Stitch the timeline' }).click();
-  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
-  expect(results.violations.filter((violation) => ['serious', 'critical'].includes(violation.impact ?? ''))).toEqual([]);
-});
-
-test('restores the app shell and saved case offline', async ({ page, context }) => {
-  await page.goto('/');
-  await page.locator('#case-title').fill('Offline refund incident');
+test('demo opens stitched, resets, and leaves for an empty real case', async ({ page }) => {
+  await page.goto('/demo');
+  await expect(page.getByText('Demo — sample data, nothing is saved')).toBeVisible();
+  await expect(page.locator('.event')).toHaveCount(6);
+  await page.locator('#case-title').fill('Changed only in demo');
   await page.locator('#case-title').blur();
-  await page.waitForTimeout(400);
-  await page.evaluate(async () => {
-    await navigator.serviceWorker.ready;
-    if (!navigator.serviceWorker.controller) {
-      await new Promise<void>((resolve) => navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true }));
-    }
-  });
-  await context.setOffline(true);
-  await page.reload();
-  await expect(page.getByRole('heading', { name: 'Find the thread through async failure.' })).toBeVisible();
-  await expect(page.locator('#case-title')).toHaveValue('Offline refund incident');
-  await expect(page.getByText('Offline ready')).toBeAttached();
+  await page.getByRole('button', { name: 'Reset demo' }).click();
+  await expect(page.locator('#case-title')).toHaveValue('Payment retry failed after vendor timeout');
+  await page.goto('/?demo=1');
+  await expect(page.locator('.event')).toHaveCount(6);
+  await page.getByRole('link', { name: 'Start for real' }).click();
+  await expect(page).toHaveURL('/');
+  await expect(page.locator('#case-title')).toHaveValue('Untitled incident');
+  await expect(page.getByText('Demo — sample data, nothing is saved')).toHaveCount(0);
+  expect(await page.evaluate(() => new Promise((resolve, reject) => {
+    const open = indexedDB.open('demo:async-trace-stitcher', 1);
+    open.onerror = () => reject(open.error);
+    open.onsuccess = () => {
+      const request = open.result.transaction('cases').objectStore('cases').get('active-draft');
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result ?? null);
+    };
+  }))).toBeNull();
 });
 
-test('scrubs configured email, phone, and nested token identifiers from JSON export', async ({ page }) => {
+test('real routes set titles, canonical URLs, and one h1', async ({ page }) => {
+  const routes = [
+    ['/', 'Async Trace Stitcher — incident timelines', 'https://async-trace-stitcher.sociobot.in/'],
+    ['/demo', 'Demo — Async Trace Stitcher', 'https://async-trace-stitcher.sociobot.in/demo'],
+    ['/privacy', 'Privacy — Async Trace Stitcher', 'https://async-trace-stitcher.sociobot.in/privacy'],
+    ['/terms', 'Terms — Async Trace Stitcher', 'https://async-trace-stitcher.sociobot.in/terms'],
+  ] as const;
+  for (const [path, title, canonical] of routes) {
+    await page.goto(path);
+    await expect(page).toHaveTitle(title);
+    await expect(page.locator('h1')).toHaveCount(1);
+    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', canonical);
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /async-trace-stitcher-social\.webp$/);
+    await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href', '/apple-touch-icon.png');
+  }
+});
+
+test('all internal page links resolve', async ({ page, request }) => {
+  const paths = new Set<string>();
+  for (const route of ['/', '/demo', '/privacy', '/terms', '/missing']) {
+    await page.goto(route);
+    const hrefs = await page.locator('a[href]').evaluateAll((links) => links.map((link) => (link as HTMLAnchorElement).href));
+    for (const href of hrefs) {
+      const url = new URL(href);
+      if (url.origin === 'http://127.0.0.1:4173') paths.add(`${url.pathname}${url.search}`);
+    }
+  }
+  for (const path of paths) {
+    const response = await request.get(path);
+    expect(response.status(), path).toBe(200);
+  }
+});
+
+test('unknown routes render the designed 404 state', async ({ page }) => {
+  await page.goto('/no-such-page');
+  await expect(page).toHaveTitle('Page not found — Async Trace Stitcher');
+  await expect(page.getByRole('heading', { level: 1, name: 'This page is not on the evidence board' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Return home' })).toBeVisible();
+});
+
+test('history navigation restores the route and focuses its h1', async ({ page }) => {
   await page.goto('/');
-  const event = '{"timestamp":"2026-01-01T00:00:00Z","request_id":"req_42","email":"alice@example.com","phone":"+1 (415) 555-0199","nested":{"accessToken":"tok_live_secret_123"}}';
-  await page.locator('#source-content-0').fill(event);
-  await page.locator('#source-content-0').blur();
-  await page.locator('#source-content-1').fill(event.replace('00:00:00', '00:00:01'));
-  await page.locator('#source-content-1').blur();
-  await page.locator('#rule-fields-0').fill('request_id, email, phone, nested.accessToken');
-  await page.locator('#rule-fields-0').blur();
-  await page.getByRole('button', { name: 'Stitch the timeline' }).click();
-
-  const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export scrubbed bundle' }).click();
-  const download = await downloadPromise;
-  const path = await download.path();
-  expect(path).not.toBeNull();
-  const bundle = JSON.parse(await readFile(path as string, 'utf8')) as { timeline: Array<{ identifiers: Record<string, string[]> }> };
-  const serialized = JSON.stringify(bundle);
-
-  expect(serialized).not.toContain('alice@example.com');
-  expect(serialized).not.toContain('+1 (415) 555-0199');
-  expect(serialized).not.toContain('tok_live_secret_123');
-  expect(Object.values(bundle.timeline[0].identifiers).flat()).toEqual(expect.arrayContaining(['[REDACTED]']));
+  await page.getByRole('link', { name: 'Demo', exact: true }).click();
+  await expect(page).toHaveURL('/demo');
+  await expect(page.locator('main h1')).toBeFocused();
+  await page.goBack();
+  await expect(page).toHaveURL('/');
+  await expect(page.locator('main h1')).toBeFocused();
+  await expect(page.locator('#route-status')).toContainText('Async Trace Stitcher');
 });
 
 test('skip link places keyboard focus at the main landmark', async ({ page }) => {
@@ -77,9 +94,9 @@ test('skip link places keyboard focus at the main landmark', async ({ page }) =>
   await expect(page.locator('main')).toBeFocused();
 });
 
-test('header and form controls meet the 44px target-size contract', async ({ page }) => {
-  await page.goto('/');
-  for (const selector of ['.site-nav a', '#case-title', '#rule-fields-0', '#rule-enabled-0']) {
+test('interactive targets meet the 44px contract', async ({ page }) => {
+  await page.goto('/demo');
+  for (const selector of ['.site-nav a', '.demo-actions > *', '#case-title', '#rule-fields-0', '#rule-enabled-0']) {
     const boxes = await page.locator(selector).evaluateAll((elements) => elements.map((element) => {
       const rect = element.getBoundingClientRect();
       return { width: rect.width, height: rect.height };
@@ -92,10 +109,29 @@ test('header and form controls meet the 44px target-size contract', async ({ pag
   }
 });
 
-test('legal routes each retain one clear page heading', async ({ page }) => {
-  for (const path of ['/privacy', '/terms']) {
+test('home, demo, legal, and 404 states have no serious accessibility violations', async ({ page }) => {
+  for (const path of ['/', '/demo', '/privacy', '/terms', '/missing']) {
     await page.goto(path);
-    await expect(page.locator('main')).toBeVisible();
-    await expect(page.locator('h1')).toHaveCount(1);
+    const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+    expect(results.violations.filter((violation) => ['serious', 'critical'].includes(violation.impact ?? '')), path).toEqual([]);
   }
+});
+
+test('mobile layout has no horizontal overflow and shows demo results first', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'mobile-only layout assertion');
+  await page.goto('/demo');
+  const widths = await page.locator('body').evaluate((body) => ({ scroll: body.scrollWidth, client: body.clientWidth }));
+  expect(widths.scroll).toBeLessThanOrEqual(widths.client);
+  await expect(page.getByRole('heading', { name: 'Reviewable timeline' })).toBeInViewport();
+  await expect(page.getByText('5 identifier matched')).toBeInViewport();
+});
+
+test('the page emits no console or page errors', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/demo');
+  await page.getByRole('button', { name: 'Reset demo' }).click();
+  await page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'Privacy' }).click();
+  expect(errors).toEqual([]);
 });
