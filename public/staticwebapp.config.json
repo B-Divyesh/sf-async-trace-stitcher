@@ -1,11 +1,4 @@
 {
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": [
-      "/assets/*",
-      "/*.{css,js,png,jpg,svg,webp,ico,woff2,json,txt,xml,wasm}"
-    ]
-  },
   "responseOverrides": {
     "404": {
       "rewrite": "/404.html",
@@ -22,6 +15,30 @@
     ".webmanifest": "application/manifest+json"
   },
   "routes": [
+    {
+      "route": "/demo",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/demo/",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/privacy",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/privacy/",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/terms",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/terms/",
+      "rewrite": "/index.html"
+    },
     {
       "route": "/assets/*",
       "headers": {
