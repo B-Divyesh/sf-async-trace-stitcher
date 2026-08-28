@@ -1,6 +1,6 @@
 import './style.css';
 import { DEFAULT_DRAFT, SAMPLE_SOURCES } from './defaults';
-import { scrubPii, stitch } from './engine';
+import { scrubPii, scrubStitchedEventForExport, stitch } from './engine';
 import { BUY_URL, cachedUnlock, captureReturnedLicense, removeToken, storeToken, verifyLicense } from './license';
 import { clearDraft, loadDraft, saveDraft } from './storage';
 import type { CaseDraft, StitchResult, StitchedEvent } from './types';
@@ -15,6 +15,7 @@ let lastSaved: Date | null = null;
 let saveTimer = 0;
 let notice = '';
 let isPro = cachedUnlock();
+let offlineReady = !navigator.onLine;
 
 const escapeHtml = (value: unknown): string => String(value ?? '')
   .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
@@ -31,7 +32,7 @@ function header(): string {
     <div class="header-inner">
       <a class="brand" href="/" aria-label="Async Trace Stitcher home"><img src="/mark.svg" alt=""><span>Async Trace Stitcher</span></a>
       <nav class="site-nav" aria-label="Primary navigation">
-        <span class="online-state ${navigator.onLine ? '' : 'offline'}" id="online-state">${navigator.onLine ? 'On device' : 'Offline ready'}</span>
+        <span class="online-state ${offlineReady ? 'offline' : ''}" id="online-state">${offlineReady ? 'Offline ready' : 'On device'}</span>
         <a href="/#workbench">Workbench</a><a href="/privacy">Privacy</a>
       </nav>
     </div>
@@ -60,7 +61,7 @@ function legalPage(kind: 'privacy' | 'terms'): string {
     <h2>Your responsibility</h2><p>Import only data you are authorized to process. Redact credentials before import, confirm scrubbed exports before sharing, and comply with your organization’s retention rules.</p>
     <h2>Pro purchase</h2><p>Pro is a one-time US$29 license for the rule-preset library and Markdown review export. Core analysis, JSON/CSV export, accessibility, and redaction remain free. Sociobot/Dodo is the merchant of record and handles payments and refunds; a refund revokes the associated license.</p>
     <h2>Warranty and liability</h2><p>The software is provided “as is” under the MIT License, without warranties. To the extent permitted by law, its authors are not liable for losses arising from use or interpretation of an incident bundle.</p>`;
-  return `${header()}<main id="main" class="legal">${kind === 'privacy' ? privacy : terms}<p><a class="button secondary" href="/">Return to the workbench</a></p></main>${footer()}`;
+  return `${header()}<main id="main" tabindex="-1" class="legal">${kind === 'privacy' ? privacy : terms}<p><a class="button secondary" href="/">Return to the workbench</a></p></main>${footer()}`;
 }
 
 function sourceMarkup(): string {
@@ -150,7 +151,7 @@ function licenseMarkup(): string {
 }
 
 function homePage(): string {
-  return `${header()}<main id="main">
+  return `${header()}<main id="main" tabindex="-1">
     <section class="hero" aria-labelledby="page-title"><div class="hero-copy">
       <p class="eyebrow">Local evidence workbench</p><h1 id="page-title">Find the thread through async failure.</h1>
       <p class="lede">Turn redacted logs, queue records, and webhook exports into a timestamped, reviewable timeline—without deploying an APM or uploading customer evidence.</p>
@@ -279,28 +280,27 @@ function download(filename: string, content: string, type: string): void {
 
 function filenameBase(): string { return draft.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'incident'; }
 
-const sensitiveEvidenceField = /(^|[._])(email|phone|mobile|address|first_name|last_name|full_name|password|secret|token|authorization|cookie|card|cvv)($|[._])/i;
 function safeText(value: unknown): string { return String(scrubPii(String(value ?? ''))); }
-function scrubEventForExport(event: StitchedEvent): StitchedEvent {
+function scrubDraftForExport(): CaseDraft {
   return {
-    ...event,
-    sourceName: safeText(event.sourceName),
-    label: safeText(event.label),
-    raw: scrubPii(event.raw),
-    evidence: event.evidence.map((item) => ({ ...item, value: sensitiveEvidenceField.test(item.field) ? '[REDACTED]' : safeText(item.value) })),
+    ...draft,
+    title: safeText(draft.title),
+    sources: draft.sources.map((source) => ({ ...source, name: safeText(source.name), content: '[Omitted: see scrubbed events]' })),
+    rules: draft.rules.map((rule) => ({ ...rule, name: safeText(rule.name), fields: rule.fields.map(safeText) })),
+    timestampFields: draft.timestampFields.map(safeText),
   };
 }
 
 function exportJson(): void {
   if (!result) return;
-  const safeDraft = { ...draft, sources: draft.sources.map((source) => ({ ...source, content: '[Omitted: see scrubbed events]' })) };
+  const safeDraft = scrubDraftForExport();
   const bundle = {
     format: 'async-trace-stitcher/v1',
     caution: 'Mechanical correlation only. Review source evidence before drawing causal conclusions.',
     draft: safeDraft,
     summary: { events: result.events.length, matched: result.matched.length, unmatched: result.unmatched.length, parseIssues: result.issues.length },
-    timeline: result.events.map(scrubEventForExport),
-    parseIssues: result.issues,
+    timeline: result.events.map((event) => scrubStitchedEventForExport(event, draft.rules)),
+    parseIssues: result.issues.map((issue) => ({ sourceName: safeText(issue.sourceName), message: safeText(issue.message) })),
     exportedAt: new Date().toISOString(),
   };
   download(`${filenameBase()}-bundle.json`, JSON.stringify(bundle, null, 2), 'application/json');
@@ -311,14 +311,14 @@ function csvCell(value: unknown): string { return `"${String(value ?? '').replac
 function exportCsv(): void {
   if (!result) return;
   const lines = [['timestamp', 'source', 'event', 'confidence', 'score', 'group', 'evidence']
-    .map(csvCell).join(','), ...result.events.map(scrubEventForExport).map((event) => [event.timestamp, event.sourceName, event.label, event.confidenceLabel, event.confidence, event.groupId, event.evidence.map((item) => `${item.rule}:${item.field}=${item.value}`).join('; ')].map(csvCell).join(','))];
+    .map(csvCell).join(','), ...result.events.map((event) => scrubStitchedEventForExport(event, draft.rules)).map((event) => [event.timestamp, event.sourceName, event.label, event.confidenceLabel, event.confidence, event.groupId, event.evidence.map((item) => `${item.rule}:${item.field}=${item.value}`).join('; ')].map(csvCell).join(','))];
   download(`${filenameBase()}-timeline.csv`, lines.join('\n'), 'text/csv;charset=utf-8');
 }
 
 function exportMarkdown(): void {
   if (!result || !isPro) return;
-  const rows = result.events.map(scrubEventForExport).map((event) => `| ${event.timestamp ?? 'Unknown'} | ${event.sourceName.replaceAll('|', '\\|')} | ${event.label.replaceAll('|', '\\|')} | ${event.confidenceLabel} ${event.confidence || ''} |`).join('\n');
-  const text = `# ${draft.title}\n\n> Proposed mechanical correlation. Review underlying evidence before making causal claims.\n\n## Summary\n\n- ${result.matched.length} identifier-matched events\n- ${result.unmatched.length} unmatched events\n- ${result.issues.length} parse issues\n\n## Timeline\n\n| Timestamp | Source | Event | Confidence |\n|---|---|---|---|\n${rows}\n\n## Review checklist\n\n- [ ] Confirm clock skew between sources\n- [ ] Review every unmatched event\n- [ ] Validate identifiers against original exports\n- [ ] Record alternate explanations\n`;
+  const rows = result.events.map((event) => scrubStitchedEventForExport(event, draft.rules)).map((event) => `| ${event.timestamp ?? 'Unknown'} | ${event.sourceName.replaceAll('|', '\\|')} | ${event.label.replaceAll('|', '\\|')} | ${event.confidenceLabel} ${event.confidence || ''} |`).join('\n');
+  const text = `# ${safeText(draft.title)}\n\n> Proposed mechanical correlation. Review underlying evidence before making causal claims.\n\n## Summary\n\n- ${result.matched.length} identifier-matched events\n- ${result.unmatched.length} unmatched events\n- ${result.issues.length} parse issues\n\n## Timeline\n\n| Timestamp | Source | Event | Confidence |\n|---|---|---|---|\n${rows}\n\n## Review checklist\n\n- [ ] Confirm clock skew between sources\n- [ ] Review every unmatched event\n- [ ] Validate identifiers against original exports\n- [ ] Record alternate explanations\n`;
   download(`${filenameBase()}-review.md`, text, 'text/markdown;charset=utf-8');
 }
 
@@ -380,14 +380,16 @@ document.addEventListener('submit', async (event) => {
   render();
 });
 
-function onlineUpdate(): void {
+function setConnectivityState(isOffline: boolean): void {
+  offlineReady = isOffline;
   const state = document.querySelector('#online-state');
   if (!state) return;
-  state.textContent = navigator.onLine ? 'On device' : 'Offline ready';
-  state.classList.toggle('offline', !navigator.onLine);
+  state.textContent = offlineReady ? 'Offline ready' : 'On device';
+  state.classList.toggle('offline', offlineReady);
 }
-window.addEventListener('online', onlineUpdate);
-window.addEventListener('offline', onlineUpdate);
+
+window.addEventListener('online', () => setConnectivityState(false));
+window.addEventListener('offline', () => setConnectivityState(true));
 
 async function registerServiceWorker(): Promise<void> {
   if (!('serviceWorker' in navigator) || import.meta.env.DEV) return;
@@ -419,6 +421,7 @@ async function initialize(): Promise<void> {
     lastSaved = stored ? new Date(stored.updatedAt) : null;
   } catch { notice = 'Local storage is unavailable; exports still work for this session.'; }
   render();
+  setConnectivityState(!navigator.onLine);
   const verdict = await verifyLicense();
   if (verdict) {
     const before = isPro;

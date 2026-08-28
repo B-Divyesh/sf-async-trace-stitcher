@@ -189,18 +189,68 @@ export function stitch(
   return { events, matched, unmatched, issues, generatedAt: new Date().toISOString() };
 }
 
-const sensitiveKey = /(^|_)(email|phone|mobile|address|first_name|last_name|full_name|password|secret|token|authorization|cookie|card|cvv)($|_)/i;
+const sensitiveKey = /(^|[._-])(email|e_mail|phone|mobile|address|first_name|last_name|full_name|password|secret|token|authorization|cookie|card|cvv|ssn|api_key|access_token)($|[._-])/i;
 const emailPattern = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 const ipPattern = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
 const phonePattern = /(?<!\w)\+?\d[\d ()-]{7,}\d(?!\w)/g;
 
+/** Treat common schema spellings (including camelCase) as sensitive paths. */
+export function isSensitiveField(field: string): boolean {
+  const normalized = field.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
+  return sensitiveKey.test(normalized);
+}
+
+function scrubText(value: unknown): string {
+  const scrubbed = scrubPii(String(value ?? ''));
+  return typeof scrubbed === 'string' ? scrubbed : String(scrubbed);
+}
+
+function isSensitiveValue(value: string): boolean {
+  return scrubText(value) !== value;
+}
+
 export function scrubPii(value: JsonValue): JsonValue {
   if (Array.isArray(value)) return value.map(scrubPii);
   if (value && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, sensitiveKey.test(key) ? '[REDACTED]' : scrubPii(child)]));
+    return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, isSensitiveField(key) ? '[REDACTED]' : scrubPii(child)]));
   }
   if (typeof value === 'string') {
     return value.replace(emailPattern, '[REDACTED_EMAIL]').replace(ipPattern, '[REDACTED_IP]').replace(phonePattern, '[REDACTED_PHONE]');
   }
   return value;
+}
+
+/**
+ * Removes PII from every derived event representation before an export. A
+ * correlation rule can intentionally point at PII (for example `email`), so
+ * its internal identifier cache must never bypass the raw-event scrubber.
+ */
+export function scrubStitchedEventForExport(event: StitchedEvent, rules: CorrelationRule[]): StitchedEvent {
+  const rulesById = new Map(rules.map((rule) => [rule.id, rule]));
+  const identifiers = Object.fromEntries(Object.entries(event.identifiers).map(([ruleId, values]) => {
+    const rule = rulesById.get(ruleId);
+    const sensitiveValues = new Set(
+      rule
+        ? findValues(event.raw, rule.fields)
+          .filter((hit) => isSensitiveField(hit.field) || isSensitiveValue(hit.value))
+          .map((hit) => hit.value.toLowerCase())
+        : [],
+    );
+    return [ruleId, values.map((value) => sensitiveValues.has(value.toLowerCase()) || isSensitiveValue(value) ? '[REDACTED]' : scrubText(value))];
+  }));
+
+  return {
+    ...event,
+    sourceName: scrubText(event.sourceName),
+    label: scrubText(event.label),
+    raw: scrubPii(event.raw),
+    identifiers,
+    evidence: event.evidence.map((item) => ({
+      ...item,
+      rule: scrubText(item.rule),
+      field: scrubText(item.field),
+      value: isSensitiveField(item.field) || isSensitiveValue(item.value) ? '[REDACTED]' : scrubText(item.value),
+    })),
+    notes: event.notes.map(scrubText),
+  };
 }

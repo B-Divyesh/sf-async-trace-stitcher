@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseSource, scrubPii, stitch } from './engine';
+import { parseSource, scrubPii, scrubStitchedEventForExport, stitch } from './engine';
 import type { CorrelationRule, SourceInput } from './types';
 
 const rule: CorrelationRule = { id: 'request', name: 'Request', fields: ['request_id', 'data.order_id'], enabled: true };
@@ -64,5 +64,27 @@ describe('scrubPii', () => {
       message: 'Call [REDACTED_PHONE] from [REDACTED_IP]',
       nested: { authorization: '[REDACTED]' },
     });
+  });
+
+  it('scrubs configured PII from raw events and derived identifiers', () => {
+    const sensitiveRule: CorrelationRule = {
+      id: 'sensitive',
+      name: 'Customer contact',
+      fields: ['request_id', 'email', 'phone', 'nested.accessToken'],
+      enabled: true,
+    };
+    const sources: SourceInput[] = [
+      { id: 'app', name: 'App', content: '{"timestamp":"2026-01-01T00:00:00Z","request_id":"req_42","email":"alice@example.com","phone":"+1 (415) 555-0199","nested":{"accessToken":"tok_live_secret_123"}}' },
+      { id: 'vendor', name: 'Vendor', content: '{"timestamp":"2026-01-01T00:00:01Z","request_id":"req_42","email":"alice@example.com","phone":"+1 (415) 555-0199","nested":{"accessToken":"tok_live_secret_123"}}' },
+    ];
+    const stitched = stitch(sources, [sensitiveRule], ['timestamp'], 120);
+    const exported = scrubStitchedEventForExport(stitched.events[0], [sensitiveRule]);
+
+    expect(exported.identifiers.sensitive).toEqual(['req_42', '[REDACTED]', '[REDACTED]', '[REDACTED]']);
+    expect(exported.evidence.map((item) => item.value)).toContain('[REDACTED]');
+    expect(JSON.stringify(exported)).not.toContain('alice@example.com');
+    expect(JSON.stringify(exported)).not.toContain('+1 (415) 555-0199');
+    expect(JSON.stringify(exported)).not.toContain('tok_live_secret_123');
+    expect(exported.raw).toEqual(expect.objectContaining({ email: '[REDACTED]', phone: '[REDACTED]' }));
   });
 });

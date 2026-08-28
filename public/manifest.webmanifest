@@ -2,7 +2,7 @@
   "name": "Async Trace Stitcher",
   "short_name": "Trace Stitcher",
   "description": "Build a defensible timeline from partial JSON and NDJSON evidence, entirely in your browser.",
-  "start_url": "/?source=installed&v=1",
+  "start_url": "/?source=installed&v=2",
   "scope": "/",
   "display": "standalone",
   "background_color": "#F5EEDC",

@@ -1,4 +1,4 @@
-const VERSION = 'ats-v2';
+const VERSION = 'ats-v3';
 const SHELL = [
   '/', '/index.html', '/offline.html', '/manifest.webmanifest', '/mark.svg',
   '/icon-192.png', '/icon-512.png', '/assets/hero-paper-trace.webp', '/assets/hero-paper-trace-small.webp'

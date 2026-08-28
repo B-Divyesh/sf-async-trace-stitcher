@@ -17,7 +17,8 @@ Live product: <https://async-trace-stitcher.sociobot.in>
 - Saves the active case in IndexedDB and runs after the first visit without a
   network connection.
 - Exports CSV and an importable JSON incident bundle. Common PII and sensitive
-  keys are scrubbed locally before any export.
+  keys—including values retained by configured correlation rules—are scrubbed
+  locally before any export.
 - Offers an optional US$29 one-time Pro unlock for reusable rule presets and
   Markdown review notes. Core analysis, safety, accessibility, and JSON/CSV
   exports remain free.
@@ -60,8 +61,12 @@ npm run test:e2e
 ## Deploy
 
 Upload the contents of `dist/` to the static host and configure navigation
-fallbacks to `index.html` so `/privacy` and `/terms` resolve directly. Do not
-edit DNS, billing, or infrastructure from this repository.
+fallbacks to `index.html` so `/privacy` and `/terms` resolve directly. The
+checked-in `staticwebapp.config.json` supplies CSP, disabled browser
+permissions, manifest MIME, no-cache service-worker behavior, and immutable
+caching for hashed assets on the production Azure Static Web App; `_headers`
+provides the same policy for standard compatible hosts. Do not edit DNS,
+billing, or infrastructure from this repository.
 
 The service worker precaches the versioned app shell, discovers Vite’s hashed
 JS/CSS assets at install time, caches assets locally, and shows an in-app update
