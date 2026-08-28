@@ -28,5 +28,19 @@
     "landing": { "performance": 100, "accessibility": 100, "best_practices": 100, "seo": 100, "lcp_seconds": 1.6, "cls": 0, "tbt_ms": 0 },
     "demo": { "performance": 100, "accessibility": 100, "best_practices": 100, "seo": 100, "lcp_seconds": 1.4, "cls": 0, "tbt_ms": 30 }
   },
-  "production_assets_bytes": { "javascript": 39459, "css": 14561, "mobile_hero_webp": 34462 }
+  "production_assets_bytes": { "javascript": 39459, "css": 14561, "mobile_hero_webp": 34462 },
+  "deployment": {
+    "source_commit": "f9c4ec6",
+    "deployment_id": "e49dd996-3ba0-4632-accf-5713a7612d27",
+    "default_hostname": "proud-sea-07b7c890f.7.azurestaticapps.net",
+    "custom_url": "https://async-trace-stitcher.sociobot.in",
+    "home_status": 200,
+    "demo_status": 200,
+    "privacy_status": 200,
+    "terms_status": 200,
+    "unknown_status": 404,
+    "live_offline_demo_events": 6,
+    "live_request_origins": ["https://async-trace-stitcher.sociobot.in"],
+    "live_console_errors_on_home_and_demo": 0
+  }
 }

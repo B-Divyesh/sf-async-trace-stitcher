@@ -1,7 +1,8 @@
 # Repair handoff — async-trace-stitcher-polish-1
 
 Perfection-loop round 1 repairs the candidate reviewed in
-`.factory/review-1.md`. Functional repair commit: `a25cf0d`.
+`.factory/review-1.md`. Functional repair commit: `a25cf0d`. Deployed routing
+commit: `f9c4ec6`.
 
 ## What changed
 
@@ -80,9 +81,27 @@ jq -r '.[].test' .factory/claims.json
 Run each printed claim command from a fresh clone. Serve `dist/` to inspect the
 production service worker and offline behavior.
 
-## Deployment and known gaps
+## Deployment evidence
 
-Deployment evidence will be added after the production upload and live smoke
-test. There are no known blocking product findings. The Sociobot checkout
-endpoint still returns 404, so no purchase link is shown. This avoids sending
-visitors to a broken destination while preserving existing license restore.
+- Ran the work-order command: `npm ci && npm test && npm run build`.
+- Deployed `dist/` with
+  `/opt/fleet/lib/deploy-static.sh async-trace-stitcher dist`.
+- Azure deployment `e49dd996-3ba0-4632-accf-5713a7612d27` succeeded on
+  `proud-sea-07b7c890f.7.azurestaticapps.net`.
+- The custom domain is ready at
+  <https://async-trace-stitcher.sociobot.in>.
+- Live status: `/`, `/demo`, `/?demo=1`, `/privacy`, and `/terms` return 200.
+  `/no-such-page` returns the designed static page with status 404.
+- Live `verify-url.sh` passed on home and demo. Both reported zero console
+  errors, one h1, `lang=en`, a main landmark, complete alt text, and no
+  unlabeled buttons.
+- A fresh live Chromium context loaded six demo events, reloaded all six
+  offline, and observed only the product origin during the demo flow.
+- Live History API checks moved focus to the demo h1 and restored focus to the
+  home h1 after Back. Privacy and Terms returned their route-specific titles.
+
+## Known gaps
+
+There are no known blocking product findings. The Sociobot checkout endpoint
+still returns 404, so no purchase link is shown. This avoids sending visitors
+to a broken destination while preserving existing license restore.
