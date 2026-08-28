@@ -66,3 +66,48 @@ No rolling production update was available to manually trigger the visible
 “Update now” toast. The implemented `updatefound`/`SKIP_WAITING` path remains
 in place; the service worker cache generation and installed-app start URL were
 advanced in this release.
+
+---
+
+# Independent verification handoff — PASS
+
+**Work order:** `async-trace-stitcher-verify-2`
+
+**Verified candidate:** `432f313d4b4195a628a56eb4f2b64d3ad1a2f3ec`
+
+**Verified URL:** https://async-trace-stitcher.sociobot.in
+
+**Date:** 2026-08-28 UTC
+**Release decision:** **PASS — release-ready.**
+
+Fresh verification was run from a clean dependency install without modifying
+product code. `npm test` passed 6/6, `npm run build` passed and produced
+`dist/`, and `npm run test:e2e` passed 14/14 on desktop and exact 390px
+mobile. Independent live workflows confirmed the 5 matched/1 unmatched
+example, malformed NDJSON visibility and recovery, invalid case and 10 MB
+input errors, local PII-scrubbed export (email/phone/IP/nested token),
+local-only core traffic, offline IndexedDB reload, keyboard focus, reduced
+motion, zero Axe serious/critical findings, and no console/page errors.
+
+The live HTML, JS, CSS, service worker, and manifest SHA-256 values exactly
+matched the candidate's fresh build. Live headers provide CSP,
+Permissions-Policy, HSTS, referrer and MIME protections, immutable hashed
+asset caching, and a no-cache service worker. Lighthouse against the live site
+scored Performance 100 and Accessibility 100 (FCP 0.9 s, LCP 1.2 s, TBT 70
+ms, CLS 0).
+
+No P0–P3 defects were observed. A genuine rolling production service-worker
+revision was unavailable, so the update toast/skip-waiting path was also
+verified using an isolated temporary copy of the exact `dist/` artifact with
+only its worker cache-version changed; it displayed the update control and
+activated/reloaded correctly. Details and all evidence are in
+[`verification-2.md`](verification-2.md).
+
+To reproduce the repository gates:
+
+```sh
+npm ci
+npm test
+npm run build
+npm run test:e2e
+```
