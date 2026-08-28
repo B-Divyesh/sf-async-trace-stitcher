@@ -1,14 +1,88 @@
-# Review handoff — async-trace-stitcher-review-1
+# Repair handoff — async-trace-stitcher-polish-1
 
-Completed an adversarial, read-only first-visit review of the live product. Product code was not changed.
+Perfection-loop round 1 repairs the candidate reviewed in
+`.factory/review-1.md`. Functional repair commit: `a25cf0d`.
 
-Created `.factory/review-1.md` with the FAIL verdict, ordered findings, live evidence, complete landing/README copy audit, terminology table, and concrete fixes.
+## What changed
 
-Verification performed:
+- Replaced the metaphorical first screen with the engineer, failed-transaction
+  job, one primary sample action, a named import action, and three plain facts.
+- Added `/demo` and `?demo=1`. Both seed and immediately render the six-event
+  result without a second click.
+- Added the persistent demo banner, **Reset demo**, and **Start for real**.
+  Demo writes use `demo:async-trace-stitcher`; real case and license storage
+  are never read or written while the banner is active. Leaving clears demo
+  data.
+- Added `.factory/claims.json`, six uniquely tagged claim tests, and
+  `.factory/demo.md`.
+- Added History API navigation, back-button state, route-title updates, heading
+  focus, polite announcements, canonical metadata, Open Graph and Twitter
+  metadata, a 1200×630 social image, an Apple touch icon, `/demo` sitemap entry,
+  and client plus static 404 states.
+- Removed the dead checkout action. Existing license restoration remains;
+  new purchases are described as paused.
+- Reordered the demo timeline before controls on phones and retained the
+  side-by-side evidence workbench on desktop.
+- Reworked input terms, the time-window label, README sentences, legal copy,
+  footer attribution/build ID, and the catalog description.
+- Preserved the paper-cut evidence-board identity. The new social image is a
+  crop of the original generated workbench art.
 
-- Fresh live Chromium contexts at 390×844 and desktop.
-- Demo click, direct `/demo`, IndexedDB namespace, route, metadata, and live-link checks.
-- Fresh local clone at `/tmp/async-trace-review-clone.rjOaSJ`: `npm ci`, `npm test`, and `npm run build` passed.
-- Current checkout: `npm test`, `npm run build`, `npx playwright test --project=desktop --workers=2`, and `npx playwright test --project=mobile --workers=2` passed.
+## Verification evidence
 
-Known gaps are product findings, not review gaps: no claims registry/demo documentation, no sandboxed one-click demo, invalid checkout link, and missing demo/404 routing. See the review for required fixes and tests.
+Persistent summary: `.factory/evidence/round-1/local-verification.json`.
+
+- `npm ci`: passed; audit reported 0 vulnerabilities.
+- `npm test`: 6 unit tests passed.
+- `npm run build`: passed and wrote `dist/index.html`.
+- Production assets: 39,459-byte JS, 14,561-byte CSS, and 34,462-byte mobile
+  hero image. These are below the 200 KB, 50 KB, and 300 KB budgets.
+- `npm run test:e2e`: 33 passed, 1 intentional desktop skip, 0 failed across
+  desktop and 390×844 mobile projects. The skip is the mobile-only viewport
+  assertion running under the desktop project.
+- Integrated axe checks: home, demo, privacy, terms, and 404 passed in both
+  projects with 0 serious or critical violations.
+- Privacy proof: the complete demo flow made only same-origin requests. The
+  test also proved the real and `demo:` IndexedDB records remain isolated.
+- Offline proof: `/demo` reloaded with all six events after Chromium was set
+  offline.
+- `/opt/fleet/lib/verify-url.sh http://127.0.0.1:4173/demo ...`: passed with
+  0 console errors, one h1, `lang=en`, a main landmark, complete alt text, and
+  no unlabeled buttons.
+- Lighthouse mobile landing: Performance 100, Accessibility 100, Best
+  Practices 100, SEO 100, LCP 1.6 s, CLS 0, TBT 0 ms.
+- Lighthouse mobile demo: Performance 100, Accessibility 100, Best Practices
+  100, SEO 100, LCP 1.4 s, CLS 0, TBT 30 ms.
+
+## Clean-clone claim proof
+
+Cloned committed source with `git clone --no-local /work/repo` to
+`/tmp/ats-polish-clean.pSjwPA`, then ran `npm ci`. Every command read from
+`.factory/claims.json` passed independently:
+
+- `@claim:sample-timeline`: 1 passed.
+- `@claim:visible-evidence`: 1 passed.
+- `@claim:local-private`: 1 passed.
+- `@claim:offline-reload`: 1 passed.
+- `@claim:export-safety`: 1 passed.
+- `@claim:license-restore`: 1 passed.
+
+## Run and verify
+
+```sh
+npm ci
+npm test
+npm run build
+npm run test:e2e
+jq -r '.[].test' .factory/claims.json
+```
+
+Run each printed claim command from a fresh clone. Serve `dist/` to inspect the
+production service worker and offline behavior.
+
+## Deployment and known gaps
+
+Deployment evidence will be added after the production upload and live smoke
+test. There are no known blocking product findings. The Sociobot checkout
+endpoint still returns 404, so no purchase link is shown. This avoids sending
+visitors to a broken destination while preserving existing license restore.

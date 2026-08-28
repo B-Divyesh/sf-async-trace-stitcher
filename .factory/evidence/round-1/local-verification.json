@@ -1,0 +1,32 @@
+{
+  "date": "2026-08-28",
+  "functional_commit": "a25cf0d",
+  "clean_clone": "/tmp/ats-polish-clean.pSjwPA",
+  "claims": {
+    "sample-timeline": "pass",
+    "visible-evidence": "pass",
+    "local-private": "pass",
+    "offline-reload": "pass",
+    "export-safety": "pass",
+    "license-restore": "pass"
+  },
+  "unit": { "files": 1, "tests": 6, "result": "pass" },
+  "browser": { "projects": ["desktop", "mobile"], "passed": 33, "skipped": 1, "failed": 0 },
+  "axe": { "routes_per_project": 5, "serious_or_critical": 0 },
+  "verify_url": {
+    "url": "http://127.0.0.1:4173/demo",
+    "load_ms": 559,
+    "console_errors": 0,
+    "title": "Demo — Async Trace Stitcher",
+    "lang": "en",
+    "h1": 1,
+    "main": true,
+    "images_missing_alt": 0,
+    "unlabeled_buttons": 0
+  },
+  "lighthouse_mobile": {
+    "landing": { "performance": 100, "accessibility": 100, "best_practices": 100, "seo": 100, "lcp_seconds": 1.6, "cls": 0, "tbt_ms": 0 },
+    "demo": { "performance": 100, "accessibility": 100, "best_practices": 100, "seo": 100, "lcp_seconds": 1.4, "cls": 0, "tbt_ms": 30 }
+  },
+  "production_assets_bytes": { "javascript": 39459, "css": 14561, "mobile_hero_webp": 34462 }
+}
