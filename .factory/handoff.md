@@ -1,5 +1,28 @@
 # Async Trace Stitcher repair-2 handoff
 
+## Independent verification 3
+
+**PASS — 5 September 2026 UTC.** Independent QA reviewed implementation
+`fe981ab5cb7f623069c29d0fefa21b0daae4ddbe` and documentation base
+`f73481f7bf01d84506c67f6ed6e83625ec561816`. The documentation-only commit
+does not change product code. Fresh build and live `index.html`/`404.html`
+SHA-256 values matched exactly.
+
+From a clean clone, `npm test` passed 6/6, `npm run build` produced `dist/`,
+the production dependency audit found 0 vulnerabilities, `npm run test:e2e`
+passed 55 checks with one intentional desktop-only skip, and every one of the
+14 declared claim commands passed independently. Fresh desktop and 390px live
+contexts confirmed the first-screen job/audience/action, populated sample,
+demo label/reset/isolation, real-data exit, offline reload, route titles,
+legal pages, designed HTTP 404, keyboard skip link, reduced motion, and zero
+serious/critical Playwright Axe findings on home, demo, privacy, terms, and
+404. There are zero findings and zero untested claims.
+
+The standalone `npx @axe-core/cli` could not start because this worker has no
+system Chrome binary; Playwright's bundled Chromium completed the equivalent
+live Axe scans. No `verify-url.sh` is present; equivalent browser checks were
+run directly. Full evidence is in `.factory/verification-3.md`.
+
 ## Status
 
 **PASS.** The repaired implementation is
