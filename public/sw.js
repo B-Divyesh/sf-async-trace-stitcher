@@ -1,4 +1,4 @@
-const VERSION = 'ats-v4';
+const VERSION = 'ats-v5';
 const SHELL = [
   '/', '/index.html', '/offline.html', '/manifest.webmanifest', '/mark.svg',
   '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png', '/404.html', '/404.css',

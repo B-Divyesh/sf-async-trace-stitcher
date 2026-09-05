@@ -26,7 +26,7 @@ const ROUTE_META: Record<string, { title: string; description: string }> = {
   },
   demo: {
     title: 'Demo — Async Trace Stitcher',
-    description: 'Review a stitched six-event transaction timeline using isolated sample data.',
+    description: 'Review a stitched six-event transaction timeline using sample data.',
   },
   privacy: {
     title: 'Privacy — Async Trace Stitcher',
@@ -92,7 +92,7 @@ function header(): string {
 
 function footer(): string {
   return `<footer class="site-footer"><div class="footer-inner">
-    <p><strong>Async Trace Stitcher</strong><br><span class="tiny">Build incident timelines in your browser. Original hero imagery was generated for this product.<br>Built by Param Factory · Build 1.1.0-r1</span></p>
+    <p><strong>Async Trace Stitcher</strong><br><span class="tiny">Build incident timelines in your browser. The hero image was generated for this product.<br>Built by Param Factory · Build 1.1.0-r2</span></p>
     <div class="footer-links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="https://github.com/B-Divyesh/sf-async-trace-stitcher" rel="external">Source <span class="sr-only">(external)</span></a></div>
   </div></footer>`;
 }
@@ -101,17 +101,17 @@ function legalPage(kind: 'privacy' | 'terms'): string {
   const privacy = `<p class="eyebrow">Plain-language policy · Effective 27 August 2026</p>
     <h1>Your evidence stays on your device.</h1>
     <p class="lede">Async Trace Stitcher processes imported logs in your browser. We do not operate an ingestion backend and cannot read your case.</p>
-    <h2>Data the app stores</h2><p>Your active case, source text, and correlation rules are stored in your browser’s IndexedDB so the workbench survives a refresh. License tokens and their cached verification result are stored in localStorage.</p>
+    <h2>Data the app stores</h2><p>Your active case, source text, and matching rules are stored in your browser’s IndexedDB so the workbench survives a refresh. License tokens and their cached verification result are stored in localStorage.</p>
     <h2>Network requests</h2><p>The core workbench makes no API requests. If you verify an existing Pro license, your browser contacts <span class="mono">api.sociobot.in</span>. No vendor credentials should ever be pasted here.</p>
-    <h2>Exports and deletion</h2><p>Exports are created locally. Incident bundles scrub common email, phone, IP address, secret, authorization, address, and card fields before download. Review every bundle before sharing: arbitrary application schemas can contain sensitive data under unexpected field names. “Delete local case” removes the active IndexedDB record; your downloaded files remain yours.</p>
+    <h2>Exports and deletion</h2><p>Exports are created locally. JSON bundles scrub common email, phone, IP address, secret, authorization, address, and card fields before download. Review every JSON bundle before sharing: arbitrary application schemas can contain sensitive data under unexpected field names. “Delete local case” removes the active IndexedDB record; your downloaded files remain yours.</p>
     <h2>Contact</h2><p>Questions can be filed in the product’s public source repository.</p>`;
   const terms = `<p class="eyebrow">Product terms · Effective 27 August 2026</p>
-    <h1>Useful evidence, not a causal oracle.</h1>
+    <h1>Use results as evidence, not proof.</h1>
     <p class="lede">By using Async Trace Stitcher, you agree to use its output as an investigation aid and review the underlying evidence yourself.</p>
-    <h2>What the tool does</h2><p>It proposes ordering and matches from timestamps and the visible rules you configure. Confidence labels describe the strength of those mechanical matches. They do not prove causation, completeness, or fault.</p>
+    <h2>What the tool does</h2><p>It proposes ordering and matches from timestamps and the matching rules you configure. Confidence labels describe the strength of those mechanical matches. They do not prove causation, completeness, or fault.</p>
     <h2>Your responsibility</h2><p>Import only data you are authorized to process. Redact credentials before import, confirm scrubbed exports before sharing, and comply with your organization’s retention rules.</p>
-    <h2>Existing Pro licenses</h2><p>Existing Pro licenses provide rule-preset files and Markdown review export. New purchases are paused while checkout is unavailable. Core analysis, JSON and CSV exports, accessibility, and redaction remain free.</p>
-    <h2>Warranty and liability</h2><p>The software is provided “as is” under the MIT License, without warranties. To the extent permitted by law, its authors are not liable for losses arising from use or interpretation of an incident bundle.</p>`;
+    <h2>Existing Pro licenses</h2><p>Existing Pro licenses provide rule preset files and Markdown review notes. This app does not sell new licenses. Core analysis, JSON bundle and CSV timeline exports, accessibility, and redaction remain free.</p>
+    <h2>Warranty and liability</h2><p>The software is provided “as is” under the MIT License, without warranties. To the extent permitted by law, its authors are not liable for losses arising from use or interpretation of a JSON bundle.</p>`;
   return `${header()}<main id="main" tabindex="-1" class="legal">${kind === 'privacy' ? privacy : terms}<p><a class="button secondary" href="/">Return home</a></p></main>${footer()}`;
 }
 
@@ -120,7 +120,7 @@ function demoBanner(): string {
 }
 
 function notFoundPage(): string {
-  return `${header()}<main id="main" tabindex="-1" class="not-found"><div class="loose-thread" aria-hidden="true"><span></span></div><p class="eyebrow">404 · Loose thread</p><h1>This page is not on the evidence board</h1><p class="lede">The address does not match a page in Async Trace Stitcher.</p><div class="button-row"><a class="button primary" href="/">Return home</a><a class="button secondary" href="/demo">Open the sample timeline</a></div></main>${footer()}`;
+  return `${header()}<main id="main" tabindex="-1" class="not-found"><p class="eyebrow">404 error</p><h1>Page not found</h1><p class="lede">The address does not match a page in Async Trace Stitcher.</p><div class="button-row"><a class="button primary" href="/">Return home</a><a class="button secondary" href="/demo">Open sample timeline</a></div></main>${footer()}`;
 }
 
 function sourceMarkup(): string {
@@ -128,13 +128,13 @@ function sourceMarkup(): string {
     <div class="source-title">
       <label class="sr-only" for="source-name-${index}">Source ${index + 1} name</label>
       <input id="source-name-${index}" type="text" value="${escapeHtml(source.name)}" data-field="source-name" data-id="${escapeHtml(source.id)}">
-      <button class="ghost danger" type="button" data-action="remove-source" data-id="${escapeHtml(source.id)}" aria-label="Remove ${escapeHtml(source.name)}">Remove</button>
+      <button class="ghost danger" type="button" data-action="remove-source" data-id="${escapeHtml(source.id)}" aria-label="Remove ${escapeHtml(source.name)}">Remove source</button>
     </div>
     <label for="source-content-${index}">JSON log exports</label>
     <textarea id="source-content-${index}" data-field="source-content" data-id="${escapeHtml(source.id)}" spellcheck="false" placeholder='{"timestamp":"…","request_id":"…"}'>${escapeHtml(source.content)}</textarea>
     <div class="source-meta">
       <span class="tiny muted">${source.content.trim() ? `${source.content.split(/\r?\n/).length} text line${source.content.split(/\r?\n/).length === 1 ? '' : 's'}` : 'Paste JSON. One record per line is supported.'}</span>
-      <label class="file-button">Choose file<input type="file" accept=".json,.jsonl,.ndjson,application/json" data-file-source="${escapeHtml(source.id)}"><span class="sr-only"> for ${escapeHtml(source.name)}</span></label>
+      <label class="file-button">Import JSON file<input type="file" accept=".json,.jsonl,.ndjson,application/json" data-file-source="${escapeHtml(source.id)}"><span class="sr-only"> for ${escapeHtml(source.name)}</span></label>
     </div>
   </div>`).join('');
 }
@@ -146,11 +146,11 @@ function ruleMarkup(): string {
       <label class="sr-only" for="rule-enabled-${index}">Enable ${escapeHtml(rule.name)}</label>
       <label class="sr-only" for="rule-name-${index}">Rule ${index + 1} name</label>
       <input id="rule-name-${index}" type="text" value="${escapeHtml(rule.name)}" data-field="rule-name" data-id="${escapeHtml(rule.id)}">
-      <button class="ghost danger" type="button" data-action="remove-rule" data-id="${escapeHtml(rule.id)}" aria-label="Remove ${escapeHtml(rule.name)}">Remove</button>
+      <button class="ghost danger" type="button" data-action="remove-rule" data-id="${escapeHtml(rule.id)}" aria-label="Remove ${escapeHtml(rule.name)}">Remove rule</button>
     </div>
     <label class="rule-fields" for="rule-fields-${index}">Fields, comma separated</label>
     <input id="rule-fields-${index}" type="text" value="${escapeHtml(rule.fields.join(', '))}" data-field="rule-fields" data-id="${escapeHtml(rule.id)}" aria-describedby="rule-help-${index}">
-    <span class="field-hint" id="rule-help-${index}">Matches a terminal key such as <span class="mono">request_id</span>, or an exact path such as <span class="mono">data.order_id</span>.</span>
+    <span class="field-hint" id="rule-help-${index}">Matches a field name anywhere in a record, such as <span class="mono">request_id</span>, or a full path such as <span class="mono">data.order_id</span>.</span>
   </div>`).join('');
 }
 
@@ -186,8 +186,8 @@ function resultMarkup(): string {
   const matched = result.events.filter((event) => event.evidence.length);
   const unmatched = result.events.filter((event) => !event.evidence.length);
   return `<section aria-labelledby="result-title">
-    <div class="result-head"><div><p class="eyebrow">Proposed, not proven</p><h2 id="result-title">Reviewable timeline</h2><p class="muted">Ordered by parsed timestamp. Exact cross-source identifier matches are threaded; proximity alone remains unmatched.</p></div>
-      <div class="button-row"><button type="button" class="secondary" data-action="export-csv">Export CSV</button><button type="button" class="secondary" data-action="export-json">Export scrubbed bundle</button>${isPro ? '<button type="button" class="secondary" data-action="export-markdown">Export review notes</button>' : ''}</div>
+    <div class="result-head"><div><p class="eyebrow">Proposed, not proven</p><h2 id="result-title">Reviewable timeline</h2><p class="muted">Events are ordered by parsed timestamp. Exact cross-source matches name their matching rules. Time proximity remains unmatched.</p></div>
+      <div class="button-row"><button type="button" class="secondary" data-action="export-csv">Export CSV timeline</button><button type="button" class="secondary" data-action="export-json">Export JSON bundle</button>${isPro ? '<button type="button" class="secondary" data-action="export-markdown">Export Markdown notes</button>' : ''}</div>
     </div>
     <div class="metrics" aria-label="Timeline summary">
       <div class="metric"><strong>${matched.length}</strong> identifier matched</div>
@@ -196,14 +196,14 @@ function resultMarkup(): string {
     </div>
     ${result.issues.length ? `<div class="issue-box" role="alert"><strong>Some input could not be parsed.</strong><ul>${result.issues.map((issue) => `<li><strong>${escapeHtml(issue.sourceName)}:</strong> ${escapeHtml(issue.message)}</li>`).join('')}</ul></div>` : ''}
     ${result.events.length ? `<ol class="timeline" aria-label="Matched timeline">${matched.map(eventMarkup).join('')}</ol>
-      ${unmatched.length ? `<div class="unmatched-divider"><h2>Unmatched evidence</h2><p>These events stay visible because a defensible timeline must show what the rules could not connect.</p></div><ol class="timeline" aria-label="Unmatched evidence">${unmatched.map(eventMarkup).join('')}</ol>` : ''}`
+      ${unmatched.length ? `<div class="unmatched-divider"><h2>Unmatched evidence</h2><p>These events stay visible so you can review what the matching rules did not connect.</p></div><ol class="timeline" aria-label="Unmatched evidence">${unmatched.map(eventMarkup).join('')}</ol>` : ''}`
       : `<div class="empty-sheet"><div class="empty-mark" aria-hidden="true">0</div><h2>No events found</h2><p>Add a JSON object, JSON array of objects, or one JSON object per NDJSON line.</p></div>`}
   </section>`;
 }
 
 function licenseMarkup(): string {
   if (isPro) return `<aside class="license-strip" aria-labelledby="pro-title"><div><p class="eyebrow">License active</p><h2 id="pro-title">Pro investigator tools are unlocked</h2><p>Markdown review notes and reusable rule presets are available on this device.</p></div><button class="secondary" type="button" data-action="remove-license">Remove license</button></aside>`;
-  return `<aside class="license-strip" aria-labelledby="pro-title"><div><p class="eyebrow">Existing licenses</p><h2 id="pro-title">Restore Pro investigator tools</h2><p>Existing licenses add rule-preset files and Markdown review notes. New purchases are paused while checkout is unavailable.</p><p>Timeline building, redaction, offline use, and JSON or CSV exports remain free.</p><p><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p></div><div>
+  return `<aside class="license-strip" aria-labelledby="pro-title"><div><p class="eyebrow">Existing licenses</p><h2 id="pro-title">Restore Pro investigator tools</h2><p>Existing licenses add rule preset files and Markdown review notes. This app does not sell new licenses.</p><p>Timeline building, redaction, offline use, and JSON bundle or CSV timeline exports remain free.</p><p><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p></div><div>
     <form class="license-form" id="license-form"><label for="license-token">License token</label><input id="license-token" name="license" type="text" autocomplete="off"><button class="secondary" type="submit">Restore license</button></form>
   </div></aside>`;
 }
@@ -213,14 +213,14 @@ function controlsMarkup(headingLevel: 2 | 3): string {
   return `<div class="control-rail">
     <section class="paper-panel" aria-labelledby="case-heading"><div class="panel-heading"><${Heading} id="case-heading"><span class="step">1</span>Name the case</${Heading}></div>
       <div class="field"><label for="case-title">Incident title</label><input id="case-title" type="text" value="${escapeHtml(draft.title)}" data-field="case-title"></div>
-      <div class="button-row"><label class="file-button">Import case<input id="import-case" type="file" accept="application/json,.json"><span class="sr-only"> JSON bundle</span></label><button class="ghost danger" type="button" data-action="delete-case">Delete this case</button></div>
+      <div class="button-row"><label class="file-button">Import JSON bundle<input id="import-case" type="file" accept="application/json,.json"></label><button class="ghost danger" type="button" data-action="delete-case">Delete this case</button></div>
     </section>
     <section class="paper-panel" aria-labelledby="sources-heading"><div class="panel-heading"><${Heading} id="sources-heading"><span class="step">2</span>Add exports</${Heading}><button class="ghost" type="button" data-action="add-source">Add source</button></div>${sourceMarkup()}</section>
     <section class="paper-panel" aria-labelledby="rules-heading"><div class="panel-heading"><${Heading} id="rules-heading"><span class="step">3</span>Set matching rules</${Heading}><button class="ghost" type="button" data-action="add-rule">Add rule</button></div>
       ${ruleMarkup()}
-      <div class="field"><label for="timestamp-fields">Timestamp fields</label><input id="timestamp-fields" type="text" value="${escapeHtml(draft.timestampFields.join(', '))}" data-field="timestamp-fields"><span class="field-hint">Terminal keys or exact paths, tried in this order.</span></div>
+      <div class="field"><label for="timestamp-fields">Timestamp fields</label><input id="timestamp-fields" type="text" value="${escapeHtml(draft.timestampFields.join(', '))}" data-field="timestamp-fields"><span class="field-hint">Field names or full paths, tried in this order.</span></div>
       <div class="field"><label for="proximity">Time window in seconds</label><input id="proximity" type="number" min="1" max="86400" value="${draft.proximitySeconds}" data-field="proximity"><span class="field-hint">Time proximity is flagged but never creates an identifier match.</span></div>
-      <div class="button-row"><button class="primary" type="button" data-action="analyze">Stitch the timeline</button>${isPro ? '<button class="secondary" type="button" data-action="export-rules">Save rule preset</button><label class="file-button">Load preset<input id="import-rules" type="file" accept="application/json,.json"><span class="sr-only"> JSON rule preset</span></label>' : ''}</div>
+      <div class="button-row"><button class="primary" type="button" data-action="analyze">Stitch the timeline</button>${isPro ? '<button class="secondary" type="button" data-action="export-rules">Save rule preset</button><label class="file-button">Load rule preset<input id="import-rules" type="file" accept="application/json,.json"></label>' : ''}</div>
     </section>
   </div>`;
 }
@@ -231,7 +231,7 @@ function workbenchMarkup(demo: boolean): string {
     : '<h2 id="workbench-title">Build the incident timeline</h2><p class="muted">Import redacted exports. Your case remains in browser storage on this device.</p>';
   const state = demo ? 'Demo sandbox' : lastSaved ? `Saved in browser storage ${escapeHtml(lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}` : 'Local case ready';
   return `<section id="workbench" class="${demo ? 'demo-page' : ''}" aria-labelledby="workbench-title">
-    <div class="workbench-head"><div><p class="eyebrow">${demo ? 'Isolated sample' : 'Case workspace'}</p>${heading}</div><div class="save-state" aria-live="polite">${state}</div></div>
+    <div class="workbench-head"><div><p class="eyebrow">${demo ? 'Sample data' : 'Incident case'}</p>${heading}</div><div class="save-state" aria-live="polite">${state}</div></div>
     <div class="workbench"><div class="timeline-area" aria-live="polite">${resultMarkup()}</div>${controlsMarkup(demo ? 2 : 3)}</div>
   </section>`;
 }
@@ -239,18 +239,18 @@ function workbenchMarkup(demo: boolean): string {
 function homePage(): string {
   return `${header()}<main id="main" tabindex="-1">
     <section class="hero" aria-labelledby="page-title"><div class="hero-copy">
-      <p class="eyebrow">Incident evidence workbench</p><h1 id="page-title">Build a timeline for one failed transaction</h1>
+      <p class="eyebrow">Incident timeline builder</p><h1 id="page-title">Build a timeline for one failed transaction</h1>
       <p class="lede">For engineers debugging a customer failure across logs, queues, and webhooks.</p>
       <div class="hero-actions"><div class="primary-action"><a class="button primary" href="/demo">Try it with sample data</a><span>See a stitched six-event incident timeline.</span></div><a class="button secondary" href="#workbench">Import redacted exports</a></div>
       <ul class="plain-facts" aria-label="Product facts"><li>Runs in your browser.</li><li>Works offline after your first visit.</li><li>Timeline building and exports are free.</li></ul>
     </div><figure class="hero-figure">
       <picture><source media="(max-width: 700px)" srcset="/assets/hero-paper-trace-small.webp"><img src="/assets/hero-paper-trace.webp" width="1200" height="800" fetchpriority="high" decoding="async" alt="A paper-cut application, queue, and webhook connected by teal thread into one evidence timeline"></picture>
-      <figcaption>Three disconnected systems. One inspectable thread.</figcaption>
+      <figcaption>Three systems. One reviewable timeline.</figcaption>
     </figure></section>
-    <ul class="promise-strip" aria-label="Evidence rules"><li><span>01</span><div><strong>Visible matches</strong><br><span class="muted">Each matched event names its rule and exact value.</span></div></li><li><span>02</span><div><strong>Honest gaps</strong><br><span class="muted">Unmatched events and malformed lines stay visible.</span></div></li><li><span>03</span><div><strong>Scrubbed exports</strong><br><span class="muted">JSON and CSV downloads remove common personal and secret fields.</span></div></li></ul>
+    <ul class="promise-strip" aria-label="Evidence rules"><li><span>01</span><div><strong>Visible matches</strong><br><span class="muted">Each matched event names its matching rule and exact value.</span></div></li><li><span>02</span><div><strong>Unmatched events</strong><br><span class="muted">Unmatched events and malformed lines stay visible.</span></div></li><li><span>03</span><div><strong>Scrubbed exports</strong><br><span class="muted">JSON bundle and CSV timeline downloads remove common personal and secret fields.</span></div></li></ul>
     ${workbenchMarkup(false)}
-    <section class="how-it-works" aria-labelledby="how-title"><p class="eyebrow">From exports to evidence</p><h2 id="how-title">How it works</h2><ol><li><strong>Paste redacted exports.</strong><span>Add JSON from the app, queue, webhook, or vendor.</span></li><li><strong>Name the matching fields.</strong><span>Choose the identifiers that connect records across sources.</span></li><li><strong>Review and export.</strong><span>Inspect every match, gap, and malformed line before sharing.</span></li></ol></section>
-    <section class="limits" aria-labelledby="limits-title"><p class="eyebrow">Clear limits</p><h2 id="limits-title">What this tool does not do</h2><p>It does not ingest live telemetry or prove what caused a failure. It proposes an order from your exports and visible rules.</p><p>No analytics, fonts, scripts, or case data are sent to third parties during the core workflow.</p></section>
+    <section class="how-it-works" aria-labelledby="how-title"><p class="eyebrow">Three steps</p><h2 id="how-title">How it works</h2><ol><li><strong>Paste redacted exports.</strong><span>Add JSON from the app, queue, webhook, or vendor.</span></li><li><strong>Name the matching fields.</strong><span>Choose the identifiers that connect records across sources.</span></li><li><strong>Review and export.</strong><span>Inspect every match, gap, and malformed line before sharing.</span></li></ol></section>
+    <section class="limits" aria-labelledby="limits-title"><p class="eyebrow">Clear limits</p><h2 id="limits-title">What this tool does not do</h2><p>Import files from your systems; this app does not connect to them. Results are proposed, not proven.</p><p>No analytics, fonts, scripts, or case data are sent to third parties during the core workflow.</p></section>
     ${licenseMarkup()}
   </main>${footer()}${notice ? `<div class="toast" role="status">${escapeHtml(notice)}<button type="button" data-action="dismiss-notice">Dismiss</button></div>` : ''}`;
 }
@@ -352,7 +352,7 @@ function bindFileInputs(): void {
       result = null;
       notice = `Imported ${file.name}. Review rules, then stitch the timeline.`;
       scheduleSave(); render();
-    } catch { notice = `${file.name} is not a valid Async Trace Stitcher case bundle.`; render(); }
+    } catch { notice = `${file.name} is not a valid Async Trace Stitcher JSON bundle.`; render(); }
   });
   document.querySelector<HTMLInputElement>('#import-rules')?.addEventListener('change', async (event) => {
     const input = event.currentTarget as HTMLInputElement;
@@ -396,7 +396,7 @@ function exportJson(): void {
   const safeDraft = scrubDraftForExport();
   const bundle = {
     format: 'async-trace-stitcher/v1',
-    caution: 'Mechanical correlation only. Review source evidence before drawing causal conclusions.',
+    caution: 'Mechanical matching only. Review source evidence before drawing causal conclusions.',
     draft: safeDraft,
     summary: { events: result.events.length, matched: result.matched.length, unmatched: result.unmatched.length, parseIssues: result.issues.length },
     timeline: result.events.map((event) => scrubStitchedEventForExport(event, draft.rules)),
@@ -404,7 +404,7 @@ function exportJson(): void {
     exportedAt: new Date().toISOString(),
   };
   download(`${filenameBase()}-bundle.json`, JSON.stringify(bundle, null, 2), 'application/json');
-  notice = 'Scrubbed incident bundle exported. Review it before sharing.'; render();
+  notice = 'Scrubbed JSON bundle exported. Review it before sharing.'; render();
 }
 
 function csvCell(value: unknown): string { return `"${String(value ?? '').replaceAll('"', '""')}"`; }
@@ -418,7 +418,7 @@ function exportCsv(): void {
 function exportMarkdown(): void {
   if (!result || !isPro) return;
   const rows = result.events.map((event) => scrubStitchedEventForExport(event, draft.rules)).map((event) => `| ${event.timestamp ?? 'Unknown'} | ${event.sourceName.replaceAll('|', '\\|')} | ${event.label.replaceAll('|', '\\|')} | ${event.confidenceLabel} ${event.confidence || ''} |`).join('\n');
-  const text = `# ${safeText(draft.title)}\n\n> Proposed mechanical correlation. Review underlying evidence before making causal claims.\n\n## Summary\n\n- ${result.matched.length} identifier-matched events\n- ${result.unmatched.length} unmatched events\n- ${result.issues.length} parse issues\n\n## Timeline\n\n| Timestamp | Source | Event | Confidence |\n|---|---|---|---|\n${rows}\n\n## Review checklist\n\n- [ ] Confirm clock skew between sources\n- [ ] Review every unmatched event\n- [ ] Validate identifiers against original exports\n- [ ] Record alternate explanations\n`;
+  const text = `# ${safeText(draft.title)}\n\n> Proposed matching. Review underlying evidence before making causal claims.\n\n## Summary\n\n- ${result.matched.length} identifier-matched events\n- ${result.unmatched.length} unmatched events\n- ${result.issues.length} parse issues\n\n## Timeline\n\n| Timestamp | Source | Event | Confidence |\n|---|---|---|---|\n${rows}\n\n## Review checklist\n\n- [ ] Confirm clock skew between sources\n- [ ] Review every unmatched event\n- [ ] Validate identifiers against original exports\n- [ ] Record alternate explanations\n`;
   download(`${filenameBase()}-review.md`, text, 'text/markdown;charset=utf-8');
 }
 
@@ -494,7 +494,7 @@ document.addEventListener('click', async (event) => {
     const source = draft.sources.find((item) => item.id === button.dataset.id);
     if (source && confirm(`Remove “${source.name}” and its pasted evidence from this case?`)) { draft.sources = draft.sources.filter((item) => item.id !== source.id); result = null; scheduleSave(); render(); }
   }
-  if (action === 'add-rule') { draft.rules.push({ id: crypto.randomUUID(), name: 'New correlation rule', fields: [], enabled: true }); scheduleSave(); render(); }
+  if (action === 'add-rule') { draft.rules.push({ id: crypto.randomUUID(), name: 'New matching rule', fields: [], enabled: true }); scheduleSave(); render(); }
   if (action === 'remove-rule') { draft.rules = draft.rules.filter((item) => item.id !== button.dataset.id); result = null; scheduleSave(); render(); }
   if (action === 'analyze') {
     result = stitch(draft.sources, draft.rules, draft.timestampFields, draft.proximitySeconds);

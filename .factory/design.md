@@ -95,3 +95,7 @@ the footer. The selected source PNG is retained for provenance; 720px and
 1200px optimized WebP derivatives ship with the app (36 KB and 92 KB). The
 1200×630 social preview is a center crop of that original asset. The 180px
 touch icon is derived from the hand-authored product mark.
+
+The provenance sidecar also records SHA-256 hashes for the source PNG, both
+shipped hero WebPs, and the social preview. The `original-hero-asset` claim
+checks those files against the record on every browser-test run.

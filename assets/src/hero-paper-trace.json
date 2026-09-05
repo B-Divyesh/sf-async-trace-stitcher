@@ -2,5 +2,11 @@
   "date": "2026-08-27",
   "tool": "/opt/fleet/lib/gen-image.sh",
   "deployment": "factory-image",
+  "hashes": {
+    "source": "6c2729a6cdabb542b2c7dfbf4a6fca85ed9551839e20b5ee61161d60dc5e9777",
+    "large": "63c7e90f49521f83f40fb3020d2f7d6e2154b814d261f4dd11c98f66ea601cf3",
+    "small": "3fc483999db1695679ff1a9bc0ccdc17ee0577a6f2f4caca6d7124e6077f8bbe",
+    "social": "af5534e8afdde4185b0d2b1bc2f6aa53a69cc413e47d9ff1f04b9c10845f8791"
+  },
   "prompt": "Use case: stylized-concept. Asset type: wide landing page hero illustration. An overhead incident-investigation workbench made as a tactile paper-cut diorama. Three small abstract paper machines representing an application server, a queue, and an external webhook each release small blank timestamp-shaped evidence slips. A single deep teal cotton thread passes through brass pins and connects the slips into one clearly ordered left-to-right timeline. Layered cut cardstock, deckled edges, tiny paper fibers, warm raking task-lamp shadows, orthographic top-down lens, shallow physical depth, crisp editorial craft. Palette of warm parchment, forest ink, deep teal, muted ochre and sparing brick red. Landscape composition with generous breathing room. No people, no hands, no brands, no logos, no letters, no legible text, no watermark, no glossy plastic, no neon, no blue-purple gradient, no user interface."
 }

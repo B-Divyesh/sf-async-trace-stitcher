@@ -34,6 +34,35 @@ test('demo opens stitched, resets, and leaves for an empty real case', async ({ 
   }))).toBeNull();
 });
 
+test('malformed, invalid, and oversized imports explain the problem and recover with sample data', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#source-content-0').fill('{"timestamp":"2026-08-26T14:03:11Z","message":"App received request","request_id":"req_recovery"}');
+  await page.locator('#source-content-0').blur();
+  await page.locator('#source-content-1').fill('{"timestamp":"2026-08-26T14:03:12Z","message":"Worker received request","request_id":"req_recovery"}\nnot valid JSON');
+  await page.locator('#source-content-1').blur();
+  await page.getByRole('button', { name: 'Stitch the timeline' }).click();
+  await expect(page.getByText('Some input could not be parsed.')).toBeVisible();
+  await expect(page.getByText(/Queue \/ webhook export: Line 2:/)).toBeVisible();
+
+  await page.locator('#import-case').setInputFiles({
+    name: 'not-a-case.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from('{"not":"a case"}'),
+  });
+  await expect(page.getByText('not-a-case.json is not a valid Async Trace Stitcher JSON bundle.')).toBeVisible();
+
+  await page.locator('[data-file-source]').first().setInputFiles({
+    name: 'too-large.json',
+    mimeType: 'application/json',
+    buffer: Buffer.alloc(10_000_001, 32),
+  });
+  await expect(page.getByText('too-large.json is over the 10 MB browser safety limit.')).toBeVisible();
+
+  await page.getByRole('link', { name: 'Demo', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Reviewable timeline' })).toBeVisible();
+  await expect(page.locator('.event')).toHaveCount(6);
+});
+
 test('real routes set titles, canonical URLs, and one h1', async ({ page }) => {
   const routes = [
     ['/', 'Async Trace Stitcher — incident timelines', 'https://async-trace-stitcher.sociobot.in/'],
@@ -71,8 +100,31 @@ test('all internal page links resolve', async ({ page, request }) => {
 test('unknown routes render the designed 404 state', async ({ page }) => {
   await page.goto('/no-such-page');
   await expect(page).toHaveTitle('Page not found — Async Trace Stitcher');
-  await expect(page.getByRole('heading', { level: 1, name: 'This page is not on the evidence board' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Return home' })).toBeVisible();
+});
+
+test('the direct static 404 uses the shared shell and route metadata', async ({ page }) => {
+  await page.goto('/404.html');
+  await expect(page).toHaveTitle('Page not found — Async Trace Stitcher');
+  await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
+  await expect(page.locator('main')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Skip to main content' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'Home' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'Demo' })).toBeVisible();
+  await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Privacy' })).toBeVisible();
+  await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Terms' })).toBeVisible();
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Return to Async Trace Stitcher/);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://async-trace-stitcher.sociobot.in/404.html');
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /async-trace-stitcher-social\.webp$/);
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
+  await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href', '/apple-touch-icon.png');
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+  expect(results.violations.filter((violation) => ['serious', 'critical'].includes(violation.impact ?? ''))).toEqual([]);
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link', { name: 'Skip to main content' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('main')).toBeFocused();
 });
 
 test('history navigation restores the route and focuses its h1', async ({ page }) => {

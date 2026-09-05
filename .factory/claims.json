@@ -8,7 +8,7 @@
   },
   {
     "id": "visible-evidence",
-    "claim": "Each match names its rule and value, while unmatched events and malformed lines stay visible.",
+    "claim": "Each match names its matching rule and value, while unmatched events and malformed lines stay visible.",
     "where": "landing evidence rules, timeline, README",
     "test": "npm run test:claim -- --grep @claim:visible-evidence",
     "sandbox": "fresh browser context at /demo; inspect all matched cards, unmatched section, and parse issue"
@@ -29,7 +29,7 @@
   },
   {
     "id": "export-safety",
-    "claim": "Free CSV and JSON exports include all six events and remove common personal and secret values.",
+    "claim": "Free CSV timeline and JSON bundle exports include all six events and remove common personal and secret values.",
     "where": "landing first screen, evidence rules, export toolbar, README",
     "test": "npm run test:claim -- --grep @claim:export-safety",
     "sandbox": "fresh unlicensed browser context at /demo; download CSV and JSON, count rows, and inspect both files for seeded personal and secret values"
@@ -40,5 +40,61 @@
     "where": "license section, privacy, terms, README",
     "test": "npm run test:claim -- --grep @claim:license-restore",
     "sandbox": "fresh browser context starting at /demo; leave the sandbox, mock the documented Sociobot verification response, submit a token, and assert stored unlock state"
+  },
+  {
+    "id": "timeline-ordering",
+    "claim": "Timeline events are ordered by their parsed timestamps.",
+    "where": "timeline results, README",
+    "test": "npm run test:claim -- --grep @claim:timeline-ordering",
+    "sandbox": "fresh browser context at /demo; replace the sample with two matched events entered out of timestamp order and assert the rendered order"
+  },
+  {
+    "id": "proximity-does-not-match",
+    "claim": "Time proximity never creates an identifier match.",
+    "where": "matching-rule help, timeline results, README",
+    "test": "npm run test:claim -- --grep @claim:proximity-does-not-match",
+    "sandbox": "fresh browser context at /demo; stitch two close events with different identifiers and assert that both remain unmatched"
+  },
+  {
+    "id": "local-import-boundary",
+    "claim": "Import files from your systems; this app does not connect to them. Results are proposed, not proven.",
+    "where": "landing limits, result header, README",
+    "test": "npm run test:claim -- --grep @claim:local-import-boundary",
+    "sandbox": "fresh browser context at /demo; edit and stitch sample sources while recording requests, assert no data-bearing or external requests, and inspect the proposed-result label"
+  },
+  {
+    "id": "markdown-export",
+    "claim": "A restored Pro license can export Markdown review notes.",
+    "where": "license section, Pro toolbar, terms",
+    "test": "npm run test:claim -- --grep @claim:markdown-export",
+    "sandbox": "fresh browser context; mock a valid documented license response, stitch two events, download Markdown notes, and inspect the incident summary and rows"
+  },
+  {
+    "id": "rule-preset-roundtrip",
+    "claim": "A restored Pro license can save and load rule preset files.",
+    "where": "license section, Pro controls, terms",
+    "test": "npm run test:claim -- --grep @claim:rule-preset-roundtrip",
+    "sandbox": "fresh browser context; mock a valid documented license response, save changed matching rules, replace them, then load the saved preset and inspect restored fields"
+  },
+  {
+    "id": "service-worker-update-notice",
+    "claim": "The app offers an update when a new offline version is ready.",
+    "where": "README",
+    "test": "npm run test:claim -- --grep @claim:service-worker-update-notice",
+    "sandbox": "fresh browser context at /demo; install the shipped worker, register a simulated waiting worker, and assert the update notice and action are visible"
+  },
+  {
+    "id": "purchase-paused",
+    "claim": "This app does not sell new licenses.",
+    "where": "license section, terms, README",
+    "test": "npm run test:claim -- --grep @claim:purchase-paused",
+    "sandbox": "fresh browser context at /; assert restoration controls are available and no checkout action is rendered"
+  },
+  {
+    "id": "original-hero-asset",
+    "claim": "The hero image was generated for this product.",
+    "where": "footer",
+    "test": "npm run test:claim -- --grep @claim:original-hero-asset",
+    "sandbox": "fresh browser context at /; assert the disclosed hero is rendered and check its source and shipped derivatives against the recorded provenance hashes"
   }
 ]
