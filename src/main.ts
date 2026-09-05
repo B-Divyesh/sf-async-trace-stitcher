@@ -17,6 +17,7 @@ let notice = '';
 let isPro = false;
 let offlineReady = !navigator.onLine;
 let storageMode: StorageMode = isDemoRoute() ? 'demo' : 'real';
+let demoResetting: Promise<void> | null = null;
 
 const SITE_ORIGIN = 'https://async-trace-stitcher.sociobot.in';
 const ROUTE_META: Record<string, { title: string; description: string }> = {
@@ -76,6 +77,17 @@ async function seedDemo(): Promise<void> {
   result = stitch(draft.sources, draft.rules, draft.timestampFields, draft.proximitySeconds);
   lastSaved = null;
   await saveDraft(draft, 'demo');
+}
+
+async function resetDemo(): Promise<void> {
+  if (demoResetting) return demoResetting;
+  demoResetting = (async () => {
+    await clearDraft('demo');
+    await seedDemo();
+    notice = 'Sample data reset to its original six events.';
+    render();
+  })().finally(() => { demoResetting = null; });
+  return demoResetting;
 }
 
 function header(): string {
@@ -476,6 +488,7 @@ document.addEventListener('click', async (event) => {
     const url = new URL(link.href, location.href);
     if (url.origin !== location.origin || url.hash || url.pathname.startsWith('/assets/')) return;
     event.preventDefault();
+    if (link.hasAttribute('data-start-real') && demoResetting) await demoResetting;
     await navigate(`${url.pathname}${url.search}`);
     return;
   }
@@ -484,10 +497,7 @@ document.addEventListener('click', async (event) => {
     await navigate('/demo');
   }
   if (action === 'reset-demo') {
-    await clearDraft('demo');
-    await seedDemo();
-    notice = 'Sample data reset to its original six events.';
-    render();
+    await resetDemo();
   }
   if (action === 'add-source') { draft.sources.push({ id: crypto.randomUUID(), name: `Source ${draft.sources.length + 1}`, content: '' }); scheduleSave(); render(); }
   if (action === 'remove-source') {

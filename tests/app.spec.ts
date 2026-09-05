@@ -34,6 +34,22 @@ test('demo opens stitched, resets, and leaves for an empty real case', async ({ 
   }))).toBeNull();
 });
 
+test('starting for real waits for an in-progress demo reset and preserves the real case', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#case-title').fill('Protected real incident');
+  await page.locator('#case-title').blur();
+  await page.waitForTimeout(350);
+  await page.getByRole('link', { name: 'Demo', exact: true }).click();
+  await expect(page.getByRole('link', { name: 'Start for real' })).toBeVisible();
+  await page.evaluate(() => {
+    (document.querySelector('[data-action="reset-demo"]') as HTMLButtonElement).click();
+    (document.querySelector('[data-start-real]') as HTMLAnchorElement).click();
+  });
+  await expect(page).toHaveURL('/');
+  await expect(page.locator('#case-title')).toHaveValue('Protected real incident');
+  await expect(page.getByText('Demo — sample data, nothing is saved')).toHaveCount(0);
+});
+
 test('malformed, invalid, and oversized imports explain the problem and recover with sample data', async ({ page }) => {
   await page.goto('/');
   await page.locator('#source-content-0').fill('{"timestamp":"2026-08-26T14:03:11Z","message":"App received request","request_id":"req_recovery"}');
